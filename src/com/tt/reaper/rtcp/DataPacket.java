@@ -21,7 +21,7 @@ public class DataPacket extends Message {
         String header = new String(content);
         String[] fields = header.split(";");
         if (fields.length < 6) {
-        	logger.error("Failed to parse content");
+        	logger.error("Failed to parse RTCP content");
         	return;
         }
     	sourceMacAddress = fields[0];
