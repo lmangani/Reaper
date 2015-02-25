@@ -16,7 +16,7 @@ public class RtpPacket extends Message {
 		super(Message.RTP_PACKET);
         String[] fields = value.split(";");
         if (fields.length < 9) {
-        	logger.error("Failed to parse content");
+        	logger.error("Failed to parse RTP content");
         	return;
         }
     	sourceMacAddress = fields[0];
