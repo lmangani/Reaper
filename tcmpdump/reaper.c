@@ -19,6 +19,9 @@ static int reaper_server_length;
 static char reaper_packet_buffer[REAPER_BUFFER_SIZE];
 static char *reaper_packet_pointer = NULL;
 static char reaper_buffer[REAPER_BUFFER_SIZE];
+static char reaper_packet_buffer_rtcp[REAPER_BUFFER_SIZE];
+static char *reaper_packet_pointer_rtcp = NULL;
+static char reaper_buffer_rtcp[REAPER_BUFFER_SIZE];
 static char reaper_source_mac[64];
 static char reaper_destination_mac[64];
 static int reaper_base_sec;
@@ -115,6 +118,26 @@ reaper_rtp_format(const struct ip *ip, int sport, int dport, const char* data, i
 }
 
 static void
+reaper_rtcp_flush(int force)
+{
+   static const char *notify = "NOTIFY sip:rtcp.example.com SIP/2.0\r\nVia: SIP/2.0/UDP 192.168.1.2;branch=z9hG4bKnp149505178-438c528b192.168.1.2;rport\r\nFrom: <sip:tcpdump@example.com>;tag=4442\r\nTo: <sip:rtcp@example.com>;tag=78923\r\nCall-Id: rtcp@example.com\r\nCSeq: 20 NOTIFY\r\nContact: <sip:tcpdump@example.com>\r\nMax-Forwards: 10\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s";
+   if (reaper_packet_pointer == reaper_packet_buffer_rtcp)
+       return;
+   int contentLength = (reaper_packet_pointer - reaper_packet_buffer_rtcp);
+   if (force == FALSE)
+   {
+      if (contentLength < REAPER_BUFFER_MAX)
+        return;
+   }
+   contentLength = sprintf(reaper_buffer_rtcp, notify, contentLength, reaper_packet_buffer_rtcp);
+   /* printf("%s\n", reaper_buffer); */
+   reaper_writer(reaper_buffer_rtcp, contentLength);
+   reaper_packet_pointer = reaper_packet_buffer_rtcp;
+   *reaper_packet_pointer = '\0';
+   return;
+}
+
+static void
 reaper_rtp_flush(int force)
 {
     static const char *notify = "NOTIFY sip:rtp.example.com SIP/2.0\r\nVia: SIP/2.0/UDP 192.168.1.2;branch=z9hG4bKnp149505178-438c528b192.168.1.2;rport\r\nFrom: <sip:tcpdump@example.com>;tag=4442\r\nTo: <sip:rtp@example.com>;tag=78923\r\nCall-Id: rtp@example.com\r\nCSeq: 20 NOTIFY\r\nContact: <sip:tcpdump@example.com>\r\nMax-Forwards: 10\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s";
@@ -138,12 +161,12 @@ static int
 reaper_rtcp_format(const struct ip *ip, int sport, int dport, const char* data, int len)
 {
    char hex[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
-   char *buffer = reaper_packet_buffer;
+   char *buffer = reaper_packet_buffer_rtcp;
 #ifdef INET6
    if (IP_V(ip) == 6) {
       const struct ip6_hdr *ip6;
       ip6 = (const struct ip6_hdr *)ip;
-      buffer += sprintf(reaper_packet_buffer, FORMAT,
+      buffer += sprintf(reaper_packet_buffer_rtcp, FORMAT,
         reaper_source_mac,
         ip6addr_string(&ip6->ip6_src),
         udpport_string(sport),
@@ -153,7 +176,7 @@ reaper_rtcp_format(const struct ip *ip, int sport, int dport, const char* data, 
    }
    else {
 #endif /*INET6*/
-      buffer += sprintf(reaper_packet_buffer, FORMAT,
+      buffer += sprintf(reaper_packet_buffer_rtcp, FORMAT,
          reaper_source_mac,
          ipaddr_string(&ip->ip_src),
          udpport_string(sport),
@@ -163,8 +186,8 @@ reaper_rtcp_format(const struct ip *ip, int sport, int dport, const char* data, 
 #ifdef INET6
    }
 #endif /*INET6*/
-   fprintf(stderr, "Sending RTCP packet <%s>\n", reaper_packet_buffer);
-   char *end_buffer = reaper_packet_buffer + sizeof(reaper_packet_buffer) - 3;
+   fprintf(stderr, "Sending RTCP packet <%s>\n", reaper_packet_buffer_rtcp);
+   char *end_buffer = reaper_packet_buffer_rtcp + sizeof(reaper_packet_buffer_rtcp) - 3;
    const char *end_data = data + len;
    while (data < end_data) {
       *(buffer++) = hex[((*data >> 4) & 0xF)];
@@ -175,7 +198,7 @@ reaper_rtcp_format(const struct ip *ip, int sport, int dport, const char* data, 
    }
    *(buffer++) = '\n';
    *(buffer) = '\0';
-   return (buffer - reaper_packet_buffer);
+   return (buffer - reaper_packet_buffer_rtcp);
 }
 
 void reaper_sip_writer(const u_char *data, int len)
@@ -200,19 +223,32 @@ reaper_rtp_writer(const struct ip *ip, int sport, int dport, const u_char *hdr, 
    int len = (int)(ep - hdr);
    if (len < 0)
        return;
-   if ((dport % 2) != 0)
-       return;
-   if ((hdr[0] & 0xE0) != 0x80) /* v2 */
-       return;
-   reaper_init();
-   reaper_rtp_format(ip, sport, dport, hdr, len);
-   reaper_rtp_flush(FALSE);
+   if ((dport % 2) != 0) {
+	/* rtcp */
+	   static const char *notify = "NOTIFY sip:rtcp.example.com SIP/2.0\r\nVia: SIP/2.0/UDP 192.168.1.2;branch=z9hG4bKnp149505178-438c528b192.168.1.2;rport\r\nFrom: <sip:tcpdump@example.com>;tag=4442\r\nTo: <sip:rtcp@example.com>;tag=78923\r\nCall-Id: rtcp@example.com\r\nCSeq: 20 NOTIFY\r\nContact: <sip:tcpdump@example.com>\r\nMax-Forwards: 10\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s";
+	   if ((hdr[0] & 0xE0) != 0x80) /* v2 */
+	       return;
+	   if ((hdr[1] < 0xc8) || (hdr[1] > 0xcf)) /* SR to XR */
+	       return;
+	   reaper_init();
+	   int contentLength = reaper_rtcp_format(ip, sport, dport, hdr, len);
+	   contentLength = sprintf(reaper_buffer_rtcp, notify, contentLength, reaper_packet_buffer_rtcp);
+	   printf("%s\n", reaper_buffer_rtcp);
+	   reaper_writer(reaper_buffer_rtcp, contentLength);
+   } else {
+	/* rtp */
+	   if ((hdr[0] & 0xE0) != 0x80) /* v2 */
+	       return;
+	   reaper_init();
+	   reaper_rtp_format(ip, sport, dport, hdr, len);
+	   reaper_rtp_flush(FALSE);
+   }
 }
 
 void
 reaper_rtcp_writer(const struct ip *ip, int sport, int dport, const u_char *hdr, const u_char *ep)
 {
-    static const char *notify = "NOTIFY sip:rtcp.example.com SIP/2.0\r\nVia: SIP/2.0/UDP 192.168.1.2;branch=z9hG4bKnp149505178-438c528b192.168.1.2;rport\r\nFrom: <sip:tcpdump@example.com>;tag=4442\r\nTo: <sip:rtcp@example.com>;tag=78923\r\nCall-Id: rtcp@example.com\r\nCSeq: 20 NOTIFY\r\nContact: <sip:tcpdump@example.com>\r\nMax-Forwards: 10\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s";
+   static const char *notify = "NOTIFY sip:rtcp.example.com SIP/2.0\r\nVia: SIP/2.0/UDP 192.168.1.2;branch=z9hG4bKnp149505178-438c528b192.168.1.2;rport\r\nFrom: <sip:tcpdump@example.com>;tag=4442\r\nTo: <sip:rtcp@example.com>;tag=78923\r\nCall-Id: rtcp@example.com\r\nCSeq: 20 NOTIFY\r\nContact: <sip:tcpdump@example.com>\r\nMax-Forwards: 10\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s";
    int len = (int)(ep - hdr);
    if (len < 0)
        return;
@@ -224,9 +260,9 @@ reaper_rtcp_writer(const struct ip *ip, int sport, int dport, const u_char *hdr,
        return;
    reaper_init();
    int contentLength = reaper_rtcp_format(ip, sport, dport, hdr, len);
-   contentLength = sprintf(reaper_buffer, notify, contentLength, reaper_packet_buffer);
-   printf("%s\n", reaper_buffer);
-   reaper_writer(reaper_buffer, contentLength);
+   contentLength = sprintf(reaper_buffer_rtcp, notify, contentLength, reaper_packet_buffer_rtcp);
+   printf("%s\n", reaper_buffer_rtcp);
+   reaper_writer(reaper_buffer_rtcp, contentLength);
 }
 
 #include <string.h>
