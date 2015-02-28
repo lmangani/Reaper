@@ -27,9 +27,9 @@ public class Metrics {
 			setFromID(context.from);
 			setToID(context.to);
 			setOrigID(context.from);
-			setLocalAddr(context.from);
+			setLocalAddr(context.fromIP);
 			setLocalMac(context.fromMac);
-			setRemoteAddr(context.to);
+			setRemoteAddr(context.toIP);
 			setRemoteMac(context.toMac);
 		}
 		else {
@@ -41,9 +41,9 @@ public class Metrics {
 			setFromID(context.from);
 			setToID(context.to);
 			setOrigID(context.from);
-			setLocalAddr(context.to);
+			setLocalAddr(context.toIP);
 			setLocalMac(context.toMac);
-			setRemoteAddr(context.from);
+			setRemoteAddr(context.fromIP);
 			setRemoteMac(context.fromMac);
 		}
 	}

@@ -15,6 +15,8 @@ public class CallContext {
 	public State state = StateInvited.instance;
 	public Date startTime;
 	public Date endTime;
+	public String fromIP;
+	public String toIP;
 	public String from;
 	public String to;
 	public String callId;
@@ -149,10 +151,14 @@ public class CallContext {
 		if (data.from){ 
 			setFromMac(packet.getSourceMac());
 			setToMac(packet.getDestinationMac());
+			setFromIP(packet.getSource());
+			setToIP(packet.getDestination());
 		}
 		else {
 			setFromMac(packet.getDestinationMac());
 			setToMac(packet.getSourceMac());
+			setFromIP(packet.getDestination());
+			setToIP(packet.getSource());
 		}
 		localMetrics = new LocalMetrics(this, data);
 		return localMetrics;
@@ -164,6 +170,14 @@ public class CallContext {
 
 	public void setToMac(String mac) {
 		toMac = mac;
+	}
+
+	public void setToIP(String ip) {
+		fromIP = ip;
+	}
+
+	public void setFromIP(String ip) {
+		toIP = ip;
 	}
 	
 	public String toString()
