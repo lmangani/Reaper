@@ -173,11 +173,13 @@ public class CallContext {
 	}
 
 	public void setToIP(String ip) {
-		fromIP = ip;
+		final String[] split = ip.split(":");
+		fromIP = "IP:"+split[0]+" PORT:"+split[1];
 	}
 
 	public void setFromIP(String ip) {
-		toIP = ip;
+		final String[] split = ip.split(":");
+		toIP = "IP:"+split[0]+" PORT:"+split[1];
 	}
 	
 	public String toString()
