@@ -44,9 +44,10 @@ To build using ant:
 # ant all
 ```
 
-A ``build.sh`` shell script is provided to generate an installable debian package: 
+A shell script is provided to generate an installable debian package: 
 
 ```
+# build.sh
 # dpkg -i reaper.deb
 ```
 After you install the package, you'll need to edit the configuration in ``/opt/reaper/config/reaper.properties``
