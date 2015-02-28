@@ -10,6 +10,20 @@ RTP packets are sniffed is most devices don't support voice quality reports
 and the Reaper can be used to analyze a segment of the network so that
 fingers can be pointed.
 
+```
+------(*)-------(*)-------[net]
+       |         ^
+       V         |
+   [tcmpdump]    |
+       |       [PUBLISH]
+   [-reaper-]    |
+ [SIP|RTP|RTCP]  |
+   |   |    |    |
+   L___|____|____|
+       V    ^    
+  [leg-correlation]
+  ```
+  
 There is a shell script to generate an installable deb file and it has been
 tested on some Ubuntu distros.
 
@@ -19,29 +33,29 @@ must be on the same network.
 The tool is written in Java with some C code to customize tcpdump so that it
 can be used as a Berkeley Packet Filter for the Reaper.
 
-There is a build.sh shell script to generate an installable package.  When you install, it may
-prompt you to install sun-java6-bin.  If it doesn't, install it if it isn't installed.  To install:
+There is a build.sh shell script to generate an installable package. Java is required.
 
+```
 dpkg -i reaper.deb
-
+```
 After you install the package, you'll need to edit the configuration
 in /opt/reaper/config/reaper.properties
 
-1) Set readInterface to the interface you want to monitor. e.g. eth0
-2) Set writeIp to the IP for the NIC to write to the Collector
-3) Set CollectorIp to the Collector IP
-4) Set CollectorPort to the Collector port if they aren't using 5060
-5) Set the collectorUsername if the Collector cares what that is.
+ 1. Set readInterface to the interface you want to monitor. e.g. eth0
+ 2. Set writeIp to the IP for the NIC to write to the Collector
+ 3. Set CollectorIp to the Collector IP
+ 4. Set CollectorPort to the Collector port if they aren't using 5060
+ 5. Set the collectorUsername if the Collector cares what that is.
 
 After that, restart the reaper:
-
+```
 /etc/init.d/reaper restart
-
-Filtered packets get a one line print in /opt/reaper/log/bpf.err  Look
+```
+Filtered packets get a one line print in ``/opt/reaper/log/bpf.err``  Look
 at that to make sure it is seeing packets.
 
-Call state prints in /opt/reaper/log/out Might look at that if you see
+Call state prints in ``/opt/reaper/log/out`` Might look at that if you see
 packets, but no PUBLISH messages.
 
-A very pimitive and simple web server is available on http://127.0.0.1:8060/ on the
+A very pimitive and simple web server is available on ``http://127.0.0.1:8060/`` on the
 probe where you can see active calls and some current call stats
