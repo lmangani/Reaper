@@ -68,6 +68,7 @@ public class CallManager extends Thread {
 					while (it.hasNext()) {
 						CallContext context;
 						context = rtcpMap.get(packet.getSource());
+							logger.debug("Found rtcp source: " + packet.getSource());
 						RtcpPacket rtcp = it.next();
 							switch (rtcp.getPacketType()) {
 						case RtcpPacket.TYPE_SOURCE_DESCRIPTION:
@@ -112,7 +113,7 @@ public class CallManager extends Thread {
 					}
 
 				} else {
-	                		logger.debug("RTP PACKET" );
+	                		// logger.debug("RTP PACKET" );
 					RtpPacket packet;
 					factory.init(((NotifyMessage)message).getRequest().getRawContent());
 					while ((packet = factory.getNext()) != null)
