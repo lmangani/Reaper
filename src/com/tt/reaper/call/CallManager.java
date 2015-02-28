@@ -67,8 +67,29 @@ public class CallManager extends Thread {
 					Iterator<RtcpPacket> it = packet.getIterator();
 					while (it.hasNext()) {
 						CallContext context;
-						context = rtcpMap.get(packet.getSource());
+						if ((context = rtcpMap.get(packet.getSource())) != null) {
 							logger.debug("Found rtcp source: " + packet.getSource());
+							if (context.process(packet) == false) {
+								logger.warn("Removing rtcp map that should of been removed");
+								rtcpMap.remove(packet.getSource());
+							} else {
+								context = rtcpMap.get(packet.getSource());
+							}
+						} else if ((context = rtcpMap.get(packet.getDestination())) != null) {
+							logger.debug("Found rtcp destination: " + packet.getDestination());
+							if (context.process(packet) == false) {
+								logger.warn("Removing rtcp map that should of been removed");
+								rtcpMap.remove(packet.getDestination());
+							} else {
+								context = rtcpMap.get(packet.getDestination());
+							}
+						} else {
+							logger.warn("RTP stream not found: " + packet);
+							return;
+						}
+
+						// context = rtcpMap.get(packet.getSource());
+
 						RtcpPacket rtcp = it.next();
 							switch (rtcp.getPacketType()) {
 						case RtcpPacket.TYPE_SOURCE_DESCRIPTION:
