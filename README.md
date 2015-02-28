@@ -33,13 +33,23 @@ must be on the same network.
 The tool is written in Java with some C code to customize tcpdump so that it
 can be used as a Berkeley Packet Filter for the Reaper.
 
-There is a build.sh shell script to generate an installable package. Java is required.
+
+To manually build Reaper from command line use:
+```
+# ./rebuild.sh
+```
+
+To build using ant:
+```
+# ant all
+```
+
+A ``build.sh`` shell script is provided to generate an installable debian package: 
 
 ```
-dpkg -i reaper.deb
+# dpkg -i reaper.deb
 ```
-After you install the package, you'll need to edit the configuration
-in /opt/reaper/config/reaper.properties
+After you install the package, you'll need to edit the configuration in ``/opt/reaper/config/reaper.properties``
 
  1. Set readInterface to the interface you want to monitor. e.g. eth0
  2. Set writeIp to the IP for the NIC to write to the Collector
@@ -49,13 +59,11 @@ in /opt/reaper/config/reaper.properties
 
 After that, restart the reaper:
 ```
-/etc/init.d/reaper restart
+# /etc/init.d/reaper restart
 ```
-Filtered packets get a one line print in ``/opt/reaper/log/bpf.err``  Look
-at that to make sure it is seeing packets.
+Filtered packets get a one line print in ``/opt/reaper/log/bpf.err`` 
 
-Call state prints in ``/opt/reaper/log/out`` Might look at that if you see
-packets, but no PUBLISH messages.
+Call state prints in ``/opt/reaper/log/out`` 
 
 A very pimitive and simple web server is available on ``http://127.0.0.1:8060/`` on the
 probe where you can see active calls and some current call stats
