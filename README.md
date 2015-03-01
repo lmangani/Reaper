@@ -19,8 +19,8 @@ fingers can be pointed.
    [-reaper-]    |
  [SIP|RTP|RTCP]  |
    |   |    |    |
-   L___|____|____|
-       V    ^    
+   |   |____|____|
+   V   ^    ^
   [leg-correlation]
   ```
   
