@@ -1,14 +1,16 @@
-The SIP Voice Quality Report Reaper sniffs RTCP and RTP packets and generates
-SIP PUBLISH messages with voice quality reports.  It does this in accordance
-with the following RFC:
+```
+ __   __           ___      ___            ___                     _ __                  
+ \ \ / /   ___    |_ _|    | _ \   ___    | _ \    ___    __ _    | __ \   ___     _ _  
+  \ V /   / _ \    | |     |  _/  |___|   |   /   / -_)  / _` |   | :__/  / -_)   | '_| 
+  _\_/_   \___/   |___|   _|_|_   _____   |_|_\   \___|  \__,_|   |_|     \___|   |_| \  
+_| """"|_|"""""|_|"""""|_| """ |_|     |_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""| 
+"`-0-0-'"`-1-0-'"`-0-1-'"`-0-0-'"`-0-0-'"`-0-1-'"`-1-1-'"`-1-0-'"`-0-1-'"`-0-1-'"`-0-0-' 
+```
 
-http://www.rfc-editor.org/rfc/rfc6035.txt
+The SIP Voice Quality Report Reaper sniffs RTCP and RTP packets and generates SIP PUBLISH messages with voice quality reports in accordance with [RFC6035](http://www.rfc-editor.org/rfc/rfc6035.txt)
 
-The tool is designed to sniff packets on a network and generate voice quality
-reports most likely to another network.  The advantage of using the mode where
-RTP packets are sniffed is most devices don't support voice quality reports
-and the Reaper can be used to analyze a segment of the network so that
-fingers can be pointed.
+The tool is designed to sniff SIP/RTP/RTCP packets on a network and generate correlated voice quality reports.  
+
 
 ```
 ------(*)-------(*)-------[net]
@@ -24,14 +26,9 @@ fingers can be pointed.
   [leg-correlation]
   ```
   
-There is a shell script to generate an installable deb file and it has been
-tested on some Ubuntu distros.
+In order to work properly, both RTP/RTCP voice packets and SIP signalling packets *MUST* be sniffed.
 
-In order to work properly, the RTP voice packets and the SIP signalling packets
-must be on the same network.
-
-The tool is written in Java with some C code to customize tcpdump so that it
-can be used as a Berkeley Packet Filter for the Reaper.
+The tool is written in Java with some C code to customize tcpdump so that it can be used as a Berkeley Packet Filter for the Reaper.
 
 
 To manually build Reaper from command line use:
@@ -52,7 +49,7 @@ A shell script is provided to generate an installable debian package:
 ```
 After you install the package, you'll need to edit the configuration in ``/opt/reaper/config/reaper.properties``
 
- 1. Set readInterface to the interface you want to monitor. e.g. eth0
+ 1. Set readInterface to the interface you want to monitor. *(e.g. eth0)*
  2. Set writeIp to the IP for the NIC to write to the Collector
  3. Set CollectorIp to the Collector IP
  4. Set CollectorPort to the Collector port if they aren't using 5060
