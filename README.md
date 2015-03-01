@@ -6,10 +6,13 @@
 _| """"|_|"""""|_|"""""|_| """ |_|     |_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""| 
 "`-0-0-'"`-1-0-'"`-0-1-'"`-0-0-'"`-0-0-'"`-0-1-'"`-1-1-'"`-1-0-'"`-0-1-'"`-0-1-'"`-0-0-' 
 ```
+Reaper is a fork of [SIP-Voice-Quality-Report-Reaper](https://github.com/TerryHowe/SIP-Voice-Quality-Report-Reaper)
 
 The SIP Voice Quality Report Reaper sniffs RTCP and RTP packets and generates SIP PUBLISH messages with voice quality reports in accordance with [RFC6035](http://www.rfc-editor.org/rfc/rfc6035.txt)
 
-The tool is designed to sniff SIP/RTP/RTCP packets on a network and generate correlated voice quality reports.  
+The tool is designed to sniff SIP/RTP/RTCP packets on a network and generate correlated voice quality reports.
+* ``RTCP`` -> ``VQIntervalReport``
+* ``RTP`` -> ``VQSessionReport``
 
 
 ```
