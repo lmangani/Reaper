@@ -195,6 +195,25 @@ public class Metrics {
 		if (! result.isEmpty())
 			metrics += "QualityEst:" + result + "\r\n";
 	}
+
+	public void setMOS(int jitter, double lossRate, int transit) {
+		String result = new String();
+		double R, MOS;
+		int EffectiveLatency = ( transit/100 + jitter * 2 + 10 );
+		if (EffectiveLatency < 160 ){
+			 R = 93.2 - (EffectiveLatency / 40);
+		} else {
+			 R = 93.2 - (EffectiveLatency - 120) / 10;
+		}
+		R = R - (lossRate * 2.9);
+		if (R > 93.2) { R = 93.2; }
+		MOS = 1 + (0.035) * R + (.000007) * R * (R-60) * (100-R);
+		result = addAttribute(result, "P-MOS:", MOS);
+		result = addAttribute(result, "P-RFACTOR:", R);
+
+		if (! result.isEmpty())
+			metrics += "QualityEst:" + result + "\r\n";
+	}
 	
 	public void setMetrics(VoipMetricsExtendedReportBlock b)
 	{
@@ -211,6 +230,7 @@ public class Metrics {
 		report.getCumulativeLost();
 		setPacketLoss(report.getFractionLost());
 		setDelay(report.getJitter());
+		// setMOS(report.getJitter(), report.getFractionLost(), report.getDelaySinceLastReport() );
 	}
 	
 	public String toString()

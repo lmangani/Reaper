@@ -29,6 +29,7 @@ public class StateTerminating extends State {
 				LocalMetrics metrics = new LocalMetrics(context, data);
 				metrics.setPacketLoss(data.getLossRate());
 				metrics.setDelay(data.getJitter());
+				metrics.setMOS(data.getJitter(), data.getLossRate(), data.getTransit() );
 				VQSessionReport report = new VQSessionReport(metrics);
 				CollectorStack.instance.sendMessage(report.toString());				
 			}
@@ -39,6 +40,7 @@ public class StateTerminating extends State {
 				LocalMetrics metrics = new LocalMetrics(context, data);
 				metrics.setPacketLoss(data.getLossRate());
 				metrics.setDelay(data.getJitter());
+				metrics.setMOS(data.getJitter(), data.getLossRate(), data.getTransit() );
 				VQSessionReport report = new VQSessionReport(metrics);
 				CollectorStack.instance.sendMessage(report.toString());				
 			}

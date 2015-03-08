@@ -101,6 +101,11 @@ public class RtpStream {
 		return (1.0 / 16.0) * ((double) d - jitter);
 	}
 	
+	final int getTransit()
+	{
+		return transit;
+	}
+	
 	final int getFirst()
 	{
 		return firstPacket;
